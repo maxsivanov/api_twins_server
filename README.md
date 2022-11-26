@@ -107,3 +107,14 @@ you want to mock
 * **Header**. Add `X-Api-Twin: embed_mode_2:user_exists` header to all
 requests you want to mock
 
+## How to change some parameters?
+
+All parameters are passed with environment:
+
+* `PUBLIC` -- `api_twins_server` can work as server for static assets (images,
+  JS bundls, etc.). `PUBLIC` environment variable has to be set to some
+  filesystem path in order to server enable this feature
+* `PUBLIC_PATH` -- webserver path to the static assets (`/` by the default).
+* `PORT` -- server port (3000 by the default)
+* `TWINS_PATH` -- directory where **API TWINS** files are located
+  (`./api_twins` by the default).

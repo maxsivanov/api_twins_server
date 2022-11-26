@@ -8,7 +8,11 @@ export async function getApp() {
     app.use(express.json());
     app.use(cookieParser());
     if (process.env.PUBLIC) {
-        app.use(express.static(process.env.PUBLIC));
+        if (process.env.PUBLIC_PATH) {
+            app.use(process.env.PUBLIC_PATH, express.static(process.env.PUBLIC));
+        } else {
+            app.use(express.static(process.env.PUBLIC));
+        }
     }
     app.use('/', await twinsMiddleware());
     app.use((err: AppError, _req: Request, res: Response, next: NextFunction) => {
