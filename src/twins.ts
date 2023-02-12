@@ -24,8 +24,8 @@ interface TwinCaseWithData extends TwinCase {
     replyHeaders: {[key: string]: string};
 }
 
-export async function twinsMiddleware() {
-    const defs = await loadTwins(process.env.TWINS_PATH || './api_twins');
+export async function twinsMiddleware(twinsDir: string) {
+    const defs = await loadTwins(twinsDir);
     return (req: Request, res: Response, next: NextFunction) => {
         const story = getStory(req);
         const params = {
@@ -47,7 +47,7 @@ export async function twinsMiddleware() {
             storyPath: undefined,
         });
         if (!found) {
-            logger.info({
+            logger.error({
                 ...story,
                 ...params,
                 msg: 'Not found',
@@ -58,7 +58,15 @@ export async function twinsMiddleware() {
         const top = found[0];
         Object.keys(top.replyHeaders)
             .forEach((key: string) => res.set(key, top.replyHeaders[key]));
-        res.status(top.status || 200);
+        const status = top.status || 200;
+        logger.info({
+            story: top.story,
+            storyPath: top.storyPath,
+            file: top.file,
+            url: params.url,
+            status,
+        });
+        res.status(status);
         res.send(top.reply);
     };
 }

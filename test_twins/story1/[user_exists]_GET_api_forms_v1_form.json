@@ -1,0 +1,16 @@
+{
+    "method": "GET",
+    "url": "/api/forms/v1/form",
+    "query": {
+        "seriesId": "8",
+        "mode": "2"
+    },
+    "status": 200,
+    "reply": {
+        "key1": "value1",
+        "key2": "value2"
+    },
+    "replyHeaders": {
+        "Content-Type": "application/json"
+    }
+}
