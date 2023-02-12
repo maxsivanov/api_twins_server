@@ -62,6 +62,7 @@ JSON file:
         "phone": "9000000",
         "code": "0000"
     },
+    "status": 404,                           # HTTP response code (default: 200)
     "reply": {                               # Server reply
         "key1": "value1",
         "key2": "value2"

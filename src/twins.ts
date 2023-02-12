@@ -54,11 +54,40 @@ export async function twinsMiddleware() {
             });
             return next();
         }
-        Object.keys(found.replyHeaders)
-            .forEach((key: string) => res.set(key, found.replyHeaders[key]));
-        res.status(found.status || 200);
-        res.send(found.reply);
+        found.sort(compareWeights);
+        const top = found[0];
+        Object.keys(top.replyHeaders)
+            .forEach((key: string) => res.set(key, top.replyHeaders[key]));
+        res.status(top.status || 200);
+        res.send(top.reply);
     };
+}
+
+function compareWeights(a: TwinCaseWithData, b: TwinCaseWithData) {
+    const keysA = countKeys(a.query) + countKeys(a.body);
+    const keysB = countKeys(b.query) + countKeys(b.body);
+    if (keysA > keysB) {
+        return -1;
+    }
+    if (keysA < keysB) {
+        return 1;
+    }
+    return 0;
+}
+
+function countKeys(data: unknown): number {
+    if (data === null) {
+        return 1;
+    }
+    if (typeof data === 'object' && data instanceof Array) {
+        return data.length +
+            data.reduce((sum, item) => sum + countKeys(item), 0);
+    }
+    if (typeof data === 'object') {
+        return Object.keys(data).length +
+            Object.values(data).reduce((sum, item) => sum + countKeys(item), 0);
+    }
+    return 1;
 }
 
 const storyPathRe = /^\[([^)]+)\]/;
@@ -109,7 +138,16 @@ async function loadTwins(dir: string) {
     const withFiles = await Promise.all(flat.map(async cur => {
         const content = await fs.readFile(join(dir, cur.story, cur.file), 'utf8');
         logger.info({ story: cur.story, loaded: cur.file });
-        return { ...cur, ...parseContent(content) };
+        try {
+            return { ...cur, ...parseContent(content) };
+        } catch (err: unknown) {
+            logger.error({
+                error: (err as Error).message,
+                story: cur.story,
+                file: cur.file,
+            });
+            process.exit(-1);
+        }
     }));
     return withFiles as TwinCaseWithData[];
 }
@@ -124,7 +162,7 @@ interface TwinSearch {
 }
 
 function findTwin(list: TwinCaseWithData[], search: TwinSearch) {
-    const found = list.find(item => {
+    const found = list.filter(item => {
         return (
             item.urlRegex.exec(search.url) &&
             search.method === item.method &&
@@ -134,7 +172,7 @@ function findTwin(list: TwinCaseWithData[], search: TwinSearch) {
             match(search.query, item.query)
         );
     });
-    return found;
+    return found.length ? found : false;
 }
 
 const TwinsCookieOrQuery = 'api_twin';
