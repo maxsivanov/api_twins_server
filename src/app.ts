@@ -14,7 +14,7 @@ export async function getApp() {
             app.use(express.static(process.env.PUBLIC));
         }
     }
-    app.use('/', await twinsMiddleware());
+    app.use('/', await twinsMiddleware(process.env.TWINS_PATH || './api_twins'));
     app.use((err: AppError, _req: Request, res: Response, next: NextFunction) => {
         if (!err) {
             return next();
