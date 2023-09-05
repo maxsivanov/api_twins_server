@@ -107,7 +107,7 @@ function getStoryPath(name: string) {
     }
 }
 
-function parseContent(content: string) {
+async function parseContent(content: string) {
     const parsed = JSON.parse(content);
     if (!parsed.method) {
         parsed.method = 'GET';
@@ -117,6 +117,9 @@ function parseContent(content: string) {
     }
     if (!parsed.reply) {
         parsed.reply = '';
+    }
+    if (parsed.replyFile) {
+        parsed.reply = await fs.readFile(parsed.replyFile);
     }
     if (!parsed.query) {
         parsed.query = {};
@@ -147,7 +150,7 @@ async function loadTwins(dir: string) {
         const content = await fs.readFile(join(dir, cur.story, cur.file), 'utf8');
         logger.info({ story: cur.story, loaded: cur.file });
         try {
-            return { ...cur, ...parseContent(content) };
+            return { ...cur, ...await parseContent(content) };
         } catch (err: unknown) {
             logger.error({
                 error: (err as Error).message,

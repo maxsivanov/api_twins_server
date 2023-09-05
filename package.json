@@ -1,6 +1,6 @@
 {
   "name": "api_twins_server",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "API mock server",
   "main": "./bin/api_twins_server",
   "repository": {
